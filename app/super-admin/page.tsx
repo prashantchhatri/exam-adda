@@ -14,14 +14,13 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorAlert from '@/components/ui/ErrorAlert';
 
 type SuperAdminDashboard = {
-  counts: {
-    users: number;
-    institutes: number;
-    students: number;
+  stats?: {
+    totalUsers?: number;
+    totalInstitutes?: number;
+    totalStudents?: number;
   };
-  users: Array<{ id: string; email: string; role: string }>;
-  institutes: Array<{ id: string; name: string; owner: { email: string } }>;
-  students: Array<{ id: string; fullName: string; user: { email: string }; institute: { name: string } }>;
+  recentUsers?: Array<{ id: string; email: string; role: string }>;
+  recentInstitutes?: Array<{ id: string; name: string }>;
 };
 
 export default function SuperAdminPage() {
@@ -56,7 +55,8 @@ export default function SuperAdminPage() {
     router.push('/admin/login');
   };
 
-  const recentUsers = data?.users?.slice(0, 10) ?? [];
+  const recentUsers = data?.recentUsers ?? [];
+  const hasStats = !!data?.stats;
 
   const userColumns: TableColumn<{ id: string; email: string; role: string }>[] = [
     { key: 'email', header: 'Email' },
@@ -77,7 +77,7 @@ export default function SuperAdminPage() {
               <LoadingSpinner />
             ) : (
               <p className="saas-stat-value">
-                {data?.counts.users ?? 0}
+                {data?.stats?.totalUsers ?? 0}
               </p>
             )}
           </Card>
@@ -86,7 +86,7 @@ export default function SuperAdminPage() {
               <LoadingSpinner />
             ) : (
               <p className="saas-stat-value">
-                {data?.counts.institutes ?? 0}
+                {data?.stats?.totalInstitutes ?? 0}
               </p>
             )}
           </Card>
@@ -95,13 +95,16 @@ export default function SuperAdminPage() {
               <LoadingSpinner />
             ) : (
               <p className="saas-stat-value">
-                {data?.counts.students ?? 0}
+                {data?.stats?.totalStudents ?? 0}
               </p>
             )}
           </Card>
         </div>
 
         <div className="saas-section-gap">
+          {!loading && !error && !hasStats ? (
+            <ErrorAlert message="Dashboard response is missing stats payload." className="mb-4" />
+          ) : null}
           <Card title="Recent Users" subtitle="Last 10 users by latest signup">
             {loading ? (
               <LoadingSpinner label="Loading recent users..." />

@@ -14,7 +14,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorAlert from '@/components/ui/ErrorAlert';
 
 type InstituteDashboard = {
-  institute: {
+  institute?: {
     id: string;
     name: string;
     slug?: string | null;
@@ -23,13 +23,16 @@ type InstituteDashboard = {
     address?: string | null;
     phone?: string | null;
     showInfoOnLogin?: boolean;
-    students: Array<{
-      id: string;
-      fullName: string;
-      user: { email: string };
-    }>;
   };
-  counts: { students: number };
+  stats?: {
+    totalStudents?: number;
+    activeExams?: number;
+  };
+  students?: Array<{
+    id: string;
+    fullName: string;
+    user: { email: string };
+  }>;
 };
 
 export default function InstitutePage() {
@@ -64,7 +67,9 @@ export default function InstitutePage() {
     router.push('/');
   };
 
-  const students = data?.institute.students ?? [];
+  const students = data?.students ?? [];
+  const institute = data?.institute;
+  const stats = data?.stats;
 
   const columns: TableColumn<{ id: string; fullName: string; user: { email: string } }>[] = [
     { key: 'fullName', header: 'Name' },
@@ -86,16 +91,16 @@ export default function InstitutePage() {
             ) : (
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  {data?.institute.name || 'Institute'}
+                  {institute?.name || 'Institute'}
                 </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {data?.institute.description || 'No description available.'}
+                  {institute?.description || 'No description available.'}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-300">
-                  {data?.institute.address || 'Address not added'}
+                  {institute?.address || 'Address not added'}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-300">
-                  {data?.institute.phone || 'Phone not added'}
+                  {institute?.phone || 'Phone not added'}
                 </p>
               </div>
             )}
@@ -107,12 +112,12 @@ export default function InstitutePage() {
                 <LoadingSpinner />
               ) : (
                 <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
-                  {data?.counts.students ?? 0}
+                  {stats?.totalStudents ?? 0}
                 </p>
               )}
             </Card>
             <Card title="Active Exams">
-              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">0</p>
+              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">{stats?.activeExams ?? 0}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">Placeholder</p>
             </Card>
           </div>

@@ -13,10 +13,12 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorAlert from '@/components/ui/ErrorAlert';
 
 type StudentDashboard = {
-  id: string;
-  fullName: string;
-  user: { email: string };
-  institute: {
+  profile?: {
+    id: string;
+    fullName: string;
+    email?: string;
+  };
+  institute?: {
     id: string;
     name: string;
     description?: string | null;
@@ -72,10 +74,10 @@ export default function StudentPage() {
             ) : (
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  {data?.fullName || 'Student'}
+                  {data?.profile?.fullName || 'Student'}
                 </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {data?.user.email || 'No email'}
+                  {data?.profile?.email || user?.email || 'No email'}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-300">
                   Academic progress and exams will appear here.
