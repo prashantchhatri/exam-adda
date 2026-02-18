@@ -9,6 +9,9 @@ import { logout } from '@/services/auth.service';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import Card from '@/components/ui/Card';
 import Table, { TableColumn } from '@/components/ui/Table';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorAlert from '@/components/ui/ErrorAlert';
 
 type InstituteDashboard = {
   institute: {
@@ -78,27 +81,35 @@ export default function InstitutePage() {
       >
         <div className="grid gap-4 md:grid-cols-2">
           <Card title="Institute Info">
-            <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                {loading ? 'Loading...' : data?.institute.name || 'Institute'}
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {data?.institute.description || 'No description available.'}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                {data?.institute.address || 'Address not added'}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                {data?.institute.phone || 'Phone not added'}
-              </p>
-            </div>
+            {loading ? (
+              <LoadingSpinner label="Loading institute details..." />
+            ) : (
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  {data?.institute.name || 'Institute'}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {data?.institute.description || 'No description available.'}
+                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {data?.institute.address || 'Address not added'}
+                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {data?.institute.phone || 'Phone not added'}
+                </p>
+              </div>
+            )}
           </Card>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Card title="Total Students">
-              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
-                {loading ? '...' : data?.counts.students ?? 0}
-              </p>
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
+                <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                  {data?.counts.students ?? 0}
+                </p>
+              )}
             </Card>
             <Card title="Active Exams">
               <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">0</p>
@@ -110,9 +121,11 @@ export default function InstitutePage() {
         <div className="mt-6">
           <Card title="Students" subtitle="All students in this institute">
             {loading ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Loading students...</p>
+              <LoadingSpinner label="Loading students..." />
             ) : error ? (
-              <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+              <ErrorAlert message={error} />
+            ) : students.length === 0 ? (
+              <EmptyState title="No students found." description="Add students to see them here." />
             ) : (
               <Table
                 columns={columns}

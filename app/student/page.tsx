@@ -8,6 +8,9 @@ import { clearSession, getCurrentUser } from '@/lib/auth';
 import { logout } from '@/services/auth.service';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import Card from '@/components/ui/Card';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorAlert from '@/components/ui/ErrorAlert';
 
 type StudentDashboard = {
   id: string;
@@ -64,61 +67,63 @@ export default function StudentPage() {
       >
         <div className="grid gap-4 md:grid-cols-2">
           <Card title="Profile">
-            <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                {loading ? 'Loading...' : data?.fullName || 'Student'}
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {data?.user.email || 'No email'}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Academic progress and exams will appear here.
-              </p>
-            </div>
+            {loading ? (
+              <LoadingSpinner label="Loading profile..." />
+            ) : (
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  {data?.fullName || 'Student'}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {data?.user.email || 'No email'}
+                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  Academic progress and exams will appear here.
+                </p>
+              </div>
+            )}
           </Card>
 
           <Card title="Institute Info">
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {data?.institute?.name || 'N/A'}
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {data?.institute?.description || 'No institute description.'}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                {data?.institute?.address || 'Address not available'}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                {data?.institute?.phone || 'Phone not available'}
-              </p>
-            </div>
+            {loading ? (
+              <LoadingSpinner label="Loading institute..." />
+            ) : (
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  {data?.institute?.name || 'N/A'}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {data?.institute?.description || 'No institute description.'}
+                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {data?.institute?.address || 'Address not available'}
+                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {data?.institute?.phone || 'Phone not available'}
+                </p>
+              </div>
+            )}
           </Card>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Card title="Available Exams" subtitle="Upcoming and open exams">
             {loading ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Loading...</p>
+              <LoadingSpinner />
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                No available exams yet.
-              </p>
+              <EmptyState title="No available exams yet." description="Your institute has not published exams yet." />
             )}
           </Card>
           <Card title="Attempted Exams" subtitle="Your completed exam history">
             {loading ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Loading...</p>
+              <LoadingSpinner />
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                No attempted exams yet.
-              </p>
+              <EmptyState title="No attempted exams yet." description="Your attempted exam history will appear here." />
             )}
           </Card>
         </div>
 
-        {error ? (
-          <p className="mt-4 text-sm text-rose-600 dark:text-rose-400">{error}</p>
-        ) : null}
+        {error ? <ErrorAlert message={error} className="mt-4" /> : null}
       </DashboardLayout>
     </AuthGuard>
   );

@@ -9,6 +9,9 @@ import { logout } from '@/services/auth.service';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import Card from '@/components/ui/Card';
 import Table, { TableColumn } from '@/components/ui/Table';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorAlert from '@/components/ui/ErrorAlert';
 
 type SuperAdminDashboard = {
   counts: {
@@ -70,30 +73,42 @@ export default function SuperAdminPage() {
       >
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <Card title="Total Users">
-            <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
-              {loading ? '...' : data?.counts.users ?? 0}
-            </p>
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                {data?.counts.users ?? 0}
+              </p>
+            )}
           </Card>
           <Card title="Total Institutes">
-            <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
-              {loading ? '...' : data?.counts.institutes ?? 0}
-            </p>
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                {data?.counts.institutes ?? 0}
+              </p>
+            )}
           </Card>
           <Card title="Total Students">
-            <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
-              {loading ? '...' : data?.counts.students ?? 0}
-            </p>
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                {data?.counts.students ?? 0}
+              </p>
+            )}
           </Card>
         </div>
 
         <div className="mt-6">
           <Card title="Recent Users" subtitle="Last 10 users by latest signup">
             {loading ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Loading recent users...</p>
+              <LoadingSpinner label="Loading recent users..." />
             ) : error ? (
-              <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+              <ErrorAlert message={error} />
             ) : recentUsers.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">No users found.</p>
+              <EmptyState title="No users found." description="New users will appear here." />
             ) : (
               <Table
                 columns={userColumns}
