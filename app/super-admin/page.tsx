@@ -71,12 +71,12 @@ export default function SuperAdminPage() {
         userName={user?.email}
         onLogout={onLogout}
       >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="saas-stats-grid">
           <Card title="Total Users">
             {loading ? (
               <LoadingSpinner />
             ) : (
-              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+              <p className="saas-stat-value">
                 {data?.counts.users ?? 0}
               </p>
             )}
@@ -85,7 +85,7 @@ export default function SuperAdminPage() {
             {loading ? (
               <LoadingSpinner />
             ) : (
-              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+              <p className="saas-stat-value">
                 {data?.counts.institutes ?? 0}
               </p>
             )}
@@ -94,14 +94,14 @@ export default function SuperAdminPage() {
             {loading ? (
               <LoadingSpinner />
             ) : (
-              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+              <p className="saas-stat-value">
                 {data?.counts.students ?? 0}
               </p>
             )}
           </Card>
         </div>
 
-        <div className="mt-6">
+        <div className="saas-section-gap">
           <Card title="Recent Users" subtitle="Last 10 users by latest signup">
             {loading ? (
               <LoadingSpinner label="Loading recent users..." />

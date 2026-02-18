@@ -23,15 +23,15 @@ export default function Table<T extends Record<string, unknown>>({
   className = '',
 }: TableProps<T>) {
   return (
-    <div className={`overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${className}`}>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left">
-          <thead className="bg-slate-50 dark:bg-slate-800/50">
+    <div className={`saas-table-wrap ${className}`}>
+      <div className="saas-table-scroll">
+        <table className="saas-table">
+          <thead>
             <tr>
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
-                  className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${column.className ?? ''}`}
+                  className={column.className ?? ''}
                 >
                   {column.header}
                 </th>
@@ -41,7 +41,7 @@ export default function Table<T extends Record<string, unknown>>({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                <td colSpan={columns.length} className="saas-table-empty">
                   {emptyText}
                 </td>
               </tr>
@@ -52,9 +52,9 @@ export default function Table<T extends Record<string, unknown>>({
                     ? rowKey(row, index)
                     : String(row[rowKey] ?? index);
                 return (
-                  <tr key={key} className="border-t border-slate-200 dark:border-slate-800">
+                  <tr key={key}>
                     {columns.map((column) => (
-                      <td key={String(column.key)} className={`px-4 py-3 text-sm text-slate-700 dark:text-slate-200 ${column.className ?? ''}`}>
+                      <td key={String(column.key)} className={column.className ?? ''}>
                         {column.render
                           ? column.render(row)
                           : String(row[column.key as keyof T] ?? '-')}
