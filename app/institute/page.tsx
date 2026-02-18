@@ -1,9 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { getInstituteDashboard } from '@/services/dashboard.service';
-import { updateMyInstituteDetails } from '@/services/institute.service';
+import { clearSession, getCurrentUser } from '@/lib/auth';
+import { logout } from '@/services/auth.service';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import Card from '@/components/ui/Card';
+import Table, { TableColumn } from '@/components/ui/Table';
 
 type InstituteDashboard = {
   institute: {
@@ -25,172 +30,100 @@ type InstituteDashboard = {
 };
 
 export default function InstitutePage() {
+  const router = useRouter();
+  const user = getCurrentUser();
   const [data, setData] = useState<InstituteDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
-  const [showInfoOnLogin, setShowInfoOnLogin] = useState(false);
-  const [savingDetails, setSavingDetails] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-
-  const instituteSlug = (data?.institute?.slug || data?.institute?.name || '')
-    .toLowerCase()
-    .replace(/[\s_-]+/g, '')
-    .replace(/[^a-z0-9]/g, '');
-  const instituteLoginUrl =
-    typeof window !== 'undefined' && instituteSlug
-      ? `${window.location.origin}/login/${instituteSlug}`
-      : '';
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       try {
         const response = await getInstituteDashboard();
         setData(response.data as InstituteDashboard);
-        const loaded = (response.data as InstituteDashboard).institute;
-        setLogoUrl(loaded.logoUrl || '');
-        setAddress(loaded.address || '');
-        setPhone(loaded.phone || '');
-        setShowInfoOnLogin(!!loaded.showInfoOnLogin);
       } catch {
         setError('Failed to load institute dashboard.');
+      } finally {
+        setLoading(false);
       }
     };
     load();
   }, []);
 
-  const onCopyLink = async () => {
-    if (!instituteLoginUrl) return;
-    await navigator.clipboard.writeText(instituteLoginUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  const onLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // ignore; client clear is enough
+    }
+    clearSession();
+    router.push('/');
   };
 
-  const onSaveInstituteDetails = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSavingDetails(true);
-    setSaveMessage(null);
-    try {
-      const response = await updateMyInstituteDetails({
-        logoUrl: logoUrl || undefined,
-        address: address || undefined,
-        phone: phone || undefined,
-        showInfoOnLogin,
-      });
-      setData((prev) =>
-        prev
-          ? {
-              ...prev,
-              institute: {
-                ...prev.institute,
-                logoUrl: response.data.logoUrl,
-                address: response.data.address,
-                phone: response.data.phone,
-                showInfoOnLogin: response.data.showInfoOnLogin,
-              },
-            }
-          : prev,
-      );
-      setSaveMessage('Institute details updated.');
-    } catch {
-      setSaveMessage('Failed to update institute details.');
-    } finally {
-      setSavingDetails(false);
-    }
-  };
+  const students = data?.institute.students ?? [];
+
+  const columns: TableColumn<{ id: string; fullName: string; user: { email: string } }>[] = [
+    { key: 'fullName', header: 'Name' },
+    { key: 'email', header: 'Email', render: (row) => row.user.email },
+  ];
 
   return (
     <AuthGuard roles={['INSTITUTE']}>
-      <section className="panel">
-        <p className="kicker">Institute Dashboard</p>
-        <h1>{data?.institute?.name || 'Institute'}</h1>
-        <p className="subtext">{data?.institute?.description || 'No description available.'}</p>
+      <DashboardLayout
+        title="Institute Dashboard"
+        role="INSTITUTE"
+        userName={user?.email}
+        onLogout={onLogout}
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card title="Institute Info">
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {loading ? 'Loading...' : data?.institute.name || 'Institute'}
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {data?.institute.description || 'No description available.'}
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {data?.institute.address || 'Address not added'}
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {data?.institute.phone || 'Phone not added'}
+              </p>
+            </div>
+          </Card>
 
-        <div className="grid-3" style={{ marginTop: 16 }}>
-          <div className="metric">
-            <h3>{data?.counts.students ?? 0}</h3>
-            <p>Total Students</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card title="Total Students">
+              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                {loading ? '...' : data?.counts.students ?? 0}
+              </p>
+            </Card>
+            <Card title="Active Exams">
+              <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100">0</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Placeholder</p>
+            </Card>
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
-          <p className="subtext" style={{ marginBottom: 8 }}>
-            Institute Login URL
-          </p>
-          <div className="copy-row">
-            <input className="copy-input" value={instituteLoginUrl} readOnly />
-            <button type="button" className="btn ghost" onClick={onCopyLink}>
-              {copied ? 'Copied' : 'Copy Link'}
-            </button>
-          </div>
+        <div className="mt-6">
+          <Card title="Students" subtitle="All students in this institute">
+            {loading ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loading students...</p>
+            ) : error ? (
+              <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+            ) : (
+              <Table
+                columns={columns}
+                data={students}
+                rowKey="id"
+                emptyText="No students found."
+              />
+            )}
+          </Card>
         </div>
-
-        <form className="form" style={{ marginTop: 22 }} onSubmit={onSaveInstituteDetails}>
-          <h2>Add institute details</h2>
-          <p className="subtext">Logo is always visible on login. Phone and address are optional.</p>
-          <label className="field">
-            Logo URL
-            <input
-              type="url"
-              placeholder="https://example.com/logo.png"
-              value={logoUrl}
-              onChange={(event) => setLogoUrl(event.target.value)}
-            />
-          </label>
-          <label className="field">
-            Phone Number (optional)
-            <input
-              type="tel"
-              placeholder="9876543210"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-            />
-          </label>
-          <label className="field">
-            Address (optional)
-            <input
-              type="text"
-              placeholder="City, Area"
-              value={address}
-              onChange={(event) => setAddress(event.target.value)}
-            />
-          </label>
-          <label className="field field-inline">
-            <span>Show phone + address on login page</span>
-            <input
-              type="checkbox"
-              checked={showInfoOnLogin}
-              onChange={(event) => setShowInfoOnLogin(event.target.checked)}
-            />
-          </label>
-          <button type="submit" className="btn primary" disabled={savingDetails}>
-            {savingDetails ? 'Saving...' : 'Save details'}
-          </button>
-          {saveMessage ? <p className={saveMessage.includes('Failed') ? 'error' : 'subtext'}>{saveMessage}</p> : null}
-        </form>
-
-        {error && <p className="error" style={{ marginTop: 16 }}>{error}</p>}
-
-        <h2 style={{ marginTop: 28 }}>Students</h2>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(data?.institute?.students || []).map((student) => (
-              <tr key={student.id}>
-                <td>{student.fullName}</td>
-                <td>{student.user.email}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      </DashboardLayout>
     </AuthGuard>
   );
 }
