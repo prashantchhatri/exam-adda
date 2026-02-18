@@ -28,16 +28,24 @@ export type StudentRegisterPayload = {
   instituteId: string;
 };
 
-export const login = (payload: LoginPayload) =>
-  api.post<AuthResponse>('/auth/login', payload);
+export const login = async (payload: LoginPayload): Promise<AuthResponse> => {
+  const response = await api.post<AuthResponse>('/auth/login', payload);
+  return response.data;
+};
 
-export const loginForInstitute = (slug: string, payload: LoginPayload) =>
-  api.post<AuthResponse>(`/auth/login/institute/${slug}`, payload);
+export const loginForInstitute = async (slug: string, payload: LoginPayload): Promise<AuthResponse> => {
+  const response = await api.post<AuthResponse>(`/auth/login/institute/${slug}`, payload);
+  return response.data;
+};
 
-export const registerInstitute = (payload: InstituteRegisterPayload) =>
-  api.post<AuthResponse>('/auth/register/institute', payload);
+export const registerInstitute = async (payload: InstituteRegisterPayload): Promise<AuthResponse> => {
+  const response = await api.post<AuthResponse>('/auth/register/institute', payload);
+  return response.data;
+};
 
-export const registerStudent = (payload: StudentRegisterPayload) =>
-  api.post<AuthResponse>('/auth/register/student', payload);
+export const registerStudent = async (payload: StudentRegisterPayload): Promise<AuthResponse> => {
+  const response = await api.post<AuthResponse>('/auth/register/student', payload);
+  return response.data;
+};
 
 export const logout = () => api.post('/auth/logout');

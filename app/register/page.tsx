@@ -51,7 +51,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const response =
+      const auth =
         accountType === 'INSTITUTE'
           ? await registerInstitute({
               email,
@@ -69,8 +69,8 @@ export default function RegisterPage() {
               instituteId,
             });
 
-      setSession(response.data.accessToken, response.data.user);
-      router.push(dashboardPathByRole(response.data.user.role));
+      setSession(auth.accessToken, auth.user);
+      router.push(dashboardPathByRole(auth.user.role));
     } catch {
       setError('Registration failed. Check inputs and try again.');
     } finally {

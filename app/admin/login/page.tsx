@@ -26,12 +26,12 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await login({ email, password });
-      if (data?.user?.role !== 'SUPER_ADMIN') {
+      const auth = await login({ email, password });
+      if (auth?.user?.role !== 'SUPER_ADMIN') {
         setError('Only super admin can login here.');
         return;
       }
-      setSession(data?.accessToken, data?.user);
+      setSession(auth?.accessToken, auth?.user);
       router.push('/super-admin');
     } catch {
       setError('Invalid credentials.');

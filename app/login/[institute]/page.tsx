@@ -61,10 +61,10 @@ export default function InstituteLoginPage() {
     setError(null);
 
     try {
-      const { data } = await loginForInstitute(requestedSlug, { email, password });
+      const auth = await loginForInstitute(requestedSlug, { email, password });
 
-      setSession(data.accessToken, data.user);
-      router.push(dashboardPathByRole(data.user.role));
+      setSession(auth.accessToken, auth.user);
+      router.push(dashboardPathByRole(auth.user.role));
     } catch {
       clearSession();
       setError('Invalid credentials.');
