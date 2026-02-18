@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Sora, DM_Sans } from 'next/font/google';
+import HeaderNav from '@/components/HeaderNav';
 
 const sora = Sora({ subsets: ['latin'], variable: '--font-sora' });
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm' });
@@ -27,10 +28,7 @@ export default function RootLayout({
                 <small>EdTech Platform</small>
               </div>
             </div>
-            <nav className="nav-links">
-              <a href="/auth/login">Login</a>
-              <a className="pill" href="/auth/register">Register</a>
-            </nav>
+            <HeaderNav />
           </header>
           <main className="app-main">{children}</main>
         </div>

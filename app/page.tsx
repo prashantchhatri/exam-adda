@@ -11,8 +11,7 @@ export default function HomePage() {
           smart onboarding, and a clean student journey from enrollment to results.
         </p>
         <div className="hero-actions">
-          <Link className="btn primary" href="/auth/login">Login</Link>
-          <Link className="btn ghost" href="/auth/register">Create account</Link>
+          <Link className="btn primary" href="/register">Create account</Link>
         </div>
         <div className="signal-row">
           <div className="signal">Cohorts</div>

@@ -92,6 +92,12 @@ a {
   background: #fff;
 }
 
+.btn-inline {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
 .app-main {
   flex: 1;
   padding: 24px 8vw 80px;
@@ -234,6 +240,29 @@ h1 {
   animation: floatIn 0.6s ease-out;
 }
 
+.institute-brand {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  padding: 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8faff;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.institute-brand img {
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.institute-brand p {
+  margin: 0;
+}
+
 .form {
   display: grid;
   gap: 16px;
@@ -247,6 +276,16 @@ h1 {
   color: var(--muted);
 }
 
+.field-inline {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.field-inline input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+}
+
 input,
 select {
   padding: 10px 12px;
@@ -254,6 +293,24 @@ select {
   border: 1px solid #c7d2fe;
   font-size: 1rem;
   background: #fff;
+}
+
+.password-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.password-wrap input {
+  flex: 1;
+}
+
+.eye-btn {
+  border: 1px solid #c7d2fe;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
 }
 
 .error {
@@ -280,6 +337,52 @@ select {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.copy-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.copy-input {
+  flex: 1;
+}
+
+.grid-3 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.metric {
+  background: #fff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.metric h3 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.metric p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 @keyframes floatIn {

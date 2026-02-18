@@ -2,88 +2,194 @@
 
 import { useEffect, useState } from 'react';
 import AuthGuard from '@/components/AuthGuard';
-import { createInstitute, getMyInstitute, Institute } from '@/services/institute.service';
+import { getInstituteDashboard } from '@/services/dashboard.service';
+import { updateMyInstituteDetails } from '@/services/institute.service';
+
+type InstituteDashboard = {
+  institute: {
+    id: string;
+    name: string;
+    slug?: string | null;
+    description?: string | null;
+    logoUrl?: string | null;
+    address?: string | null;
+    phone?: string | null;
+    showInfoOnLogin?: boolean;
+    students: Array<{
+      id: string;
+      fullName: string;
+      user: { email: string };
+    }>;
+  };
+  counts: { students: number };
+};
 
 export default function InstitutePage() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [institute, setInstitute] = useState<Institute | null>(null);
+  const [data, setData] = useState<InstituteDashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('');
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
+  const [showInfoOnLogin, setShowInfoOnLogin] = useState(false);
+  const [savingDetails, setSavingDetails] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  const instituteSlug = (data?.institute?.slug || data?.institute?.name || '')
+    .toLowerCase()
+    .replace(/[\s_-]+/g, '')
+    .replace(/[^a-z0-9]/g, '');
+  const instituteLoginUrl =
+    typeof window !== 'undefined' && instituteSlug
+      ? `${window.location.origin}/login/${instituteSlug}`
+      : '';
 
   useEffect(() => {
     const load = async () => {
       try {
-        const { data } = await getMyInstitute();
-        setInstitute(data);
+        const response = await getInstituteDashboard();
+        setData(response.data as InstituteDashboard);
+        const loaded = (response.data as InstituteDashboard).institute;
+        setLogoUrl(loaded.logoUrl || '');
+        setAddress(loaded.address || '');
+        setPhone(loaded.phone || '');
+        setShowInfoOnLogin(!!loaded.showInfoOnLogin);
       } catch {
-        setInstitute(null);
-      } finally {
-        setLoading(false);
+        setError('Failed to load institute dashboard.');
       }
     };
     load();
   }, []);
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const onCopyLink = async () => {
+    if (!instituteLoginUrl) return;
+    await navigator.clipboard.writeText(instituteLoginUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const onSaveInstituteDetails = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSaving(true);
-    setError(null);
+    setSavingDetails(true);
+    setSaveMessage(null);
     try {
-      const { data } = await createInstitute({ name, description });
-      setInstitute(data);
-    } catch (err: unknown) {
-      setError('Unable to create institute.');
+      const response = await updateMyInstituteDetails({
+        logoUrl: logoUrl || undefined,
+        address: address || undefined,
+        phone: phone || undefined,
+        showInfoOnLogin,
+      });
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              institute: {
+                ...prev.institute,
+                logoUrl: response.data.logoUrl,
+                address: response.data.address,
+                phone: response.data.phone,
+                showInfoOnLogin: response.data.showInfoOnLogin,
+              },
+            }
+          : prev,
+      );
+      setSaveMessage('Institute details updated.');
+    } catch {
+      setSaveMessage('Failed to update institute details.');
     } finally {
-      setSaving(false);
+      setSavingDetails(false);
     }
   };
 
   return (
-    <AuthGuard>
+    <AuthGuard roles={['INSTITUTE']}>
       <section className="panel">
-        <div className="dash-header">
-          <div>
-            <p className="kicker">Institute Console</p>
-            <h1>Your institute space</h1>
-            <p className="subtext">Set up once and start onboarding students.</p>
+        <p className="kicker">Institute Dashboard</p>
+        <h1>{data?.institute?.name || 'Institute'}</h1>
+        <p className="subtext">{data?.institute?.description || 'No description available.'}</p>
+
+        <div className="grid-3" style={{ marginTop: 16 }}>
+          <div className="metric">
+            <h3>{data?.counts.students ?? 0}</h3>
+            <p>Total Students</p>
           </div>
-          <div className="chip">Active</div>
         </div>
 
-        {loading ? (
-          <p className="subtext">Loading...</p>
-        ) : institute ? (
-          <div className="hero-card" style={{ marginTop: 16 }}>
-            <h2>{institute.name}</h2>
-            <p className="subtext">{institute.description || 'No description yet.'}</p>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} className="form" style={{ marginTop: 16 }}>
-            <label className="field">
-              Institute Name
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </label>
-            <label className="field">
-              Description
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </label>
-            {error && <p className="error">{error}</p>}
-            <button className="btn primary" type="submit" disabled={saving}>
-              {saving ? 'Creating...' : 'Create Institute'}
+        <div style={{ marginTop: 18 }}>
+          <p className="subtext" style={{ marginBottom: 8 }}>
+            Institute Login URL
+          </p>
+          <div className="copy-row">
+            <input className="copy-input" value={instituteLoginUrl} readOnly />
+            <button type="button" className="btn ghost" onClick={onCopyLink}>
+              {copied ? 'Copied' : 'Copy Link'}
             </button>
-          </form>
-        )}
+          </div>
+        </div>
+
+        <form className="form" style={{ marginTop: 22 }} onSubmit={onSaveInstituteDetails}>
+          <h2>Add institute details</h2>
+          <p className="subtext">Logo is always visible on login. Phone and address are optional.</p>
+          <label className="field">
+            Logo URL
+            <input
+              type="url"
+              placeholder="https://example.com/logo.png"
+              value={logoUrl}
+              onChange={(event) => setLogoUrl(event.target.value)}
+            />
+          </label>
+          <label className="field">
+            Phone Number (optional)
+            <input
+              type="tel"
+              placeholder="9876543210"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+            />
+          </label>
+          <label className="field">
+            Address (optional)
+            <input
+              type="text"
+              placeholder="City, Area"
+              value={address}
+              onChange={(event) => setAddress(event.target.value)}
+            />
+          </label>
+          <label className="field field-inline">
+            <span>Show phone + address on login page</span>
+            <input
+              type="checkbox"
+              checked={showInfoOnLogin}
+              onChange={(event) => setShowInfoOnLogin(event.target.checked)}
+            />
+          </label>
+          <button type="submit" className="btn primary" disabled={savingDetails}>
+            {savingDetails ? 'Saving...' : 'Save details'}
+          </button>
+          {saveMessage ? <p className={saveMessage.includes('Failed') ? 'error' : 'subtext'}>{saveMessage}</p> : null}
+        </form>
+
+        {error && <p className="error" style={{ marginTop: 16 }}>{error}</p>}
+
+        <h2 style={{ marginTop: 28 }}>Students</h2>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(data?.institute?.students || []).map((student) => (
+              <tr key={student.id}>
+                <td>{student.fullName}</td>
+                <td>{student.user.email}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
     </AuthGuard>
   );

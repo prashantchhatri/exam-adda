@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   useEffect(() => {
     const token = getToken();
     if (!token) {
-      router.replace('/auth/login');
+      router.replace('/');
       return;
     }
     setReady(true);
